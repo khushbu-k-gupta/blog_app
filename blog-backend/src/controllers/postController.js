@@ -7,8 +7,7 @@ const findPost = async (id) => {
 
 const isAuthorized = (post, user) => {
   return (
-    post.author.toString() === user._id.toString() ||
-    user.role === "admin"
+    post.author.toString() === user._id.toString() || user.role === "admin"
   );
 };
 
@@ -79,20 +78,32 @@ export const updatePost = async (req, res) => {
 
 export const updatePostStatus = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    const post = await findPost(req.params.id);
 
-    if (
-      post.author.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    )
-      return res.status(403).json({ message: "Not authorized" });
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    if (!isAuthorized(post, req.user)) {
+      return res.status(403).json({
+        message: "Not authorized",
+      });
+    }
+
     post.status = req.body.status;
+
     await post.save();
-    res.json({ message: "Status updated", status: post.status });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to update status" });
+
+    return res.json({
+      message: "Status updated successfully",
+      status: post.status,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
