@@ -26,10 +26,10 @@ const LikeButton = ({ postId }) => {
     if (!user) return toast.error("You must be logged in to like posts");
     try {
       if (liked) {
-        await axios.post(`/posts/${postId}/like`);
+        await axiosInstance.post(`/posts/${postId}/like`);
         setLikes(likes - 1);
       } else {
-        await axios.post(`/posts/${postId}/like`);
+        await axiosInstance.post(`/posts/${postId}/like`);
         setLikes(likes + 1);
       }
       setLiked(!liked);

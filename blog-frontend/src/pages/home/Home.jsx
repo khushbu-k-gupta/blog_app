@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
-import NewsLetter from "../../components/NewsLetter";
+import NewsLetter from "../../components/home/NewsLetter";
 import PopularCategories from "../../components/home/PopularCategories";
 import FeaturedPosts from "../../components/home/FeaturedPost";
 import LatestPosts from "../../components/home/LatestPosts";
@@ -17,7 +17,7 @@ const Home = () => {
       <Navbar/>
       <Hero />
       <PopularCategories />
-      <FeaturedPosts />
+      {/* <FeaturedPosts /> */}
       <LatestPosts />
       <AiBanner />
       <TrendingPosts />

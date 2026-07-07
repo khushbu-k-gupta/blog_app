@@ -20,9 +20,7 @@ const Navbar = () => {
             <span className="text-lg font-bold tracking-tight text-white">
               Blogging
             </span>
-            <span className="text-xs text-slate-400">
-              Premium Publishing
-            </span>
+            <span className="text-xs text-slate-400">Premium Publishing</span>
           </div>
         </Link>
 
@@ -54,7 +52,7 @@ const Navbar = () => {
               >
                 + Create Post
               </NavLink>
-              
+
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 text-sm font-bold text-white shadow-lg">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
@@ -68,6 +66,12 @@ const Navbar = () => {
             </>
           ) : (
             <>
+              <NavLink
+                to="/blogs"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+              >
+                Blogs
+              </NavLink>
               <NavLink
                 to="/auth"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"

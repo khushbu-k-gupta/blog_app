@@ -12,8 +12,8 @@ const SavedPosts = () => {
   const fetchSavedPosts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/posts/saved");
-      setPosts(res.data);
+      const res = await axios.get("/posts");
+      setPosts(res.data.posts);
     } catch (err) {
       toast.error("Failed to fetch saved posts");
     } finally {
@@ -52,8 +52,8 @@ const SavedPosts = () => {
                 <div className="flex flex-wrap gap-2 mb-4">
                   {post.tags?.length > 0 ? (
                     post.tags.map((tag) => (
-                      <span key={tag} className="px-3 py-1 rounded-full text-xs font-medium bg-green-200 text-green-800">
-                        {tag}
+                      <span key={tag._id} className="px-3 py-1 rounded-full text-xs font-medium bg-green-200 text-green-800">
+                        {tag.name}
                       </span>
                     ))
                   ) : (

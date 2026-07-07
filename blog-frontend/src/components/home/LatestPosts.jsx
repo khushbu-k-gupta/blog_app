@@ -12,7 +12,7 @@ const LatestPosts = () => {
       const res = await axios.get("/posts");
 
       // Latest 6 posts
-      setPosts(res.data.slice(0, 6));
+      setPosts(res.data?.posts.slice(0, 6));
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Failed to load latest posts"
@@ -116,10 +116,10 @@ const LatestPosts = () => {
                 <div className="flex flex-wrap gap-2 mt-5">
                   {post.tags?.slice(0, 2).map((tag) => (
                     <span
-                      key={tag}
+                      key={tag._id}
                       className="bg-sky-500/10 text-sky-400 text-xs px-3 py-1 rounded-full"
                     >
-                      #{tag}
+                      #{tag.name}
                     </span>
                   ))}
                 </div>

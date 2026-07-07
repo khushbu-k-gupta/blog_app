@@ -9,13 +9,14 @@ const MyPosts = () => {
   const [allPosts, setAllPosts] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter,setFilter]=useState("all")
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await axios.get("/posts/me");
-        console.log(res.data)
+       console.log(res.data);
+       console.log(res.data.content);
         setAllPosts(res.data);
         setPosts(res.data);
       } catch (error) {
@@ -29,23 +30,18 @@ const MyPosts = () => {
   }, []);
 
   useEffect(() => {
-  let filtered = [...allPosts];
+    let filtered = [...allPosts];
 
-  if (filter === "draft") {
-    filtered = filtered.filter((post) => post.status === "draft");
-  }
+    if (filter === "draft") {
+      filtered = filtered.filter((post) => post.status === "draft");
+    }
 
-  if (filter === "published") {
-    filtered = filtered.filter((post) => post.status === "published");
-  }
+    if (filter === "published") {
+      filtered = filtered.filter((post) => post.status === "published");
+    }
 
-  // if (filter === "saved") {
-  //   filtered = filtered.filter((post) => post.saved);
-  //   // ya alag saved API use karo
-  // }
-
-  setPosts(filtered);
-}, [filter, allPosts]);
+    setPosts(filtered);
+  }, [filter, allPosts]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-950 text-gray-300">
@@ -85,16 +81,6 @@ const MyPosts = () => {
             onClick={() => setFilter("draft")}
           >
             Draft
-          </button>
-          <button
-            className={`px-5 py-2 rounded-full font-bold transition-all duration-300 ${
-              filter === "saved"
-                ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg transform scale-105"
-                : "bg-gray-800 text-gray-400 hover:text-gray-100 hover:bg-gray-700"
-            }`}
-            onClick={() => setFilter("saved")}
-          >
-            Saved
           </button>
         </div>
 
@@ -156,9 +142,10 @@ const MyPosts = () => {
                   </div>
                 )}
 
-                <p className="text-gray-400 line-clamp-3 mb-4">
-                  {post.content}
-                </p>
+                <div
+                  className="prose prose-invert max-w-none line-clamp-3"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
 
                 <div className="flex justify-between items-center pt-4 border-t border-gray-800">
                   <span className="text-sm text-gray-500">

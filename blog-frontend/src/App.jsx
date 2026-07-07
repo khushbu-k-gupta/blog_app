@@ -51,7 +51,7 @@ function App() {
           path="/my-posts"
           element={
             <ProtectedRoute>
-              <MyPosts/>
+              <MyPosts />
             </ProtectedRoute>
           }
         />

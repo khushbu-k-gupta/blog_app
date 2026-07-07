@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-// import axios from "../api/axios";
 import { toast } from "react-toastify";
 import axiosInstance from "../../api/axios";
 
@@ -11,11 +10,9 @@ const FeaturedPosts = () => {
   const fetchFeaturedPosts = async () => {
     try {
       const res = await axiosInstance.get("/posts");
-
-      // Sirf first 3 posts
-      setPosts(res.data.slice(0, 3));
+      setPosts(res.data?.posts)
     } catch (error) {
-      toast.error("Failed to load featured posts");
+      toast.error("Failed to load featured posts",error?.message);
     } finally {
       setLoading(false);
     }
@@ -102,10 +99,10 @@ const FeaturedPosts = () => {
                   <div className="flex gap-2 flex-wrap">
                     {post.tags?.slice(0, 2).map((tag) => (
                       <span
-                        key={tag}
+                        key={tag._id}
                         className="text-xs bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full"
                       >
-                        #{tag}
+                        #{tag.name}
                       </span>
                     ))}
                   </div>

@@ -313,7 +313,7 @@ const CreatePost = () => {
               >
                 Remove Image
               </button>
-            )} 
+            )}
           </div>
 
           <div className="mb-8">
@@ -332,7 +332,10 @@ const CreatePost = () => {
             <ReactQuill
               theme="snow"
               value={content}
-              onChange={setContent}
+              onChange={(value) => {
+                console.log(value);
+                setContent(value);
+              }}
               modules={modules}
               className="bg-white text-black rounded-lg"
             />

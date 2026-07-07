@@ -11,7 +11,7 @@ const TrendingPosts = () => {
     try {
       const res = await axios.get("/posts");
 
-      const sortedPosts = [...res.data]
+      const sortedPosts = [...res.data.posts]
         .sort(
           (a, b) =>
             (b.likes?.length || 0) - (a.likes?.length || 0)
@@ -111,10 +111,10 @@ const TrendingPosts = () => {
                 <div className="flex flex-wrap gap-2 mt-5">
                   {post.tags?.slice(0, 2).map((tag) => (
                     <span
-                      key={tag}
+                      key={tag._id}
                       className="bg-orange-500/10 text-orange-300 px-3 py-1 rounded-full text-xs"
                     >
-                      #{tag}
+                      #{tag.name}
                     </span>
                   ))}
                 </div>
