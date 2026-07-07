@@ -1,44 +1,51 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "../api/axios";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import axios from "../../api/axios";
+import Navbar from "../../components/layout/Navbar";
+import Footer from "../../components/layout/Footer";
 
 const MyPosts = () => {
+  const [allPosts, setAllPosts] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [filter,setFilter]=useState("all")
 
   useEffect(() => {
     const fetchPosts = async () => {
-      setLoading(true);
       try {
-        let res;
-        if (filter === "saved") {
-          res = await axios.get("/posts/saved");
-        } else {
-          res = await axios.get("/posts");
-          console.log(res.data);
-        }
-
-        let postsData = res.data;
-
-        if (filter === "draft") {
-          postsData = postsData.filter((post) => post.status === "draft");
-        } else if (filter === "published") {
-          postsData = postsData.filter((post) => post.status === "published");
-        }
-
-        setPosts(postsData);
+        const res = await axios.get("/posts/me");
+        console.log(res.data)
+        setAllPosts(res.data);
+        setPosts(res.data);
       } catch (error) {
         toast.error("Failed to fetch posts");
       } finally {
         setLoading(false);
       }
     };
+
     fetchPosts();
-  }, [filter]);
+  }, []);
+
+  useEffect(() => {
+  let filtered = [...allPosts];
+
+  if (filter === "draft") {
+    filtered = filtered.filter((post) => post.status === "draft");
+  }
+
+  if (filter === "published") {
+    filtered = filtered.filter((post) => post.status === "published");
+  }
+
+  // if (filter === "saved") {
+  //   filtered = filtered.filter((post) => post.saved);
+  //   // ya alag saved API use karo
+  // }
+
+  setPosts(filtered);
+}, [filter, allPosts]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-950 text-gray-300">
@@ -91,9 +98,10 @@ const MyPosts = () => {
           </button>
         </div>
 
-
         {loading ? (
-          <p className="text-center text-gray-400 mt-10 text-xl">Loading posts...</p>
+          <p className="text-center text-gray-400 mt-10 text-xl">
+            Loading posts...
+          </p>
         ) : posts.length === 0 ? (
           <div className="text-center mt-10">
             <p className="text-gray-400 text-xl">No posts found.</p>
@@ -137,12 +145,12 @@ const MyPosts = () => {
 
                 {post.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {post.tags.map((tag, idx) => (
+                    {post.tags.map((tag) => (
                       <span
-                        key={idx}
+                        key={tag.name}
                         className="bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm font-medium"
                       >
-                        {tag}
+                        {tag.name}
                       </span>
                     ))}
                   </div>

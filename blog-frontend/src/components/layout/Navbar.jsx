@@ -1,79 +1,12 @@
-// import { Link } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
-
-// const Navbar = () => {
-// const { user, logout } = useAuth();
-
-//   return (
-//     <nav className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-gray-700 py-4">
-//       <div className="container mx-auto flex justify-between items-center">
-//         {/* Main Brand/Logo */}
-//         <Link
-//           to="/"
-//           className="text-2xl font-bold tracking-wide transition-colors duration-300 hover:text-sky-300"
-//         >
-//           Blogging
-//         </Link>
-
-//         {/* Navigation Links */}
-//         <div className="flex items-center space-x-6">
-//           {user ? (
-//             // Links for authenticated users
-//             <>
-//               <Link
-//                 to="/my-posts"
-//                 className="text-lg font-medium transition-colors duration-300 hover:text-sky-300"
-//               >
-//                 My Posts
-//               </Link>
-//               <Link
-//                 to="/create-post"
-//                 className="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-sky-600 hover:to-blue-700 transition-colors duration-300"
-//               >
-//                 Create Post
-//               </Link>
-//               <button
-//                 onClick={logout}
-//                 className="text-lg font-medium transition-colors duration-300 hover:text-red-400"
-//               >
-//                 Logout
-//               </button>
-//             </>
-//           ) : (
-//             // Links for guest users
-//             <>
-//               <Link
-//                 to="/auth"
-//                 className="text-lg font-medium transition-colors duration-300 hover:text-sky-300"
-//               >
-//                 Login
-//               </Link>
-//               <Link
-//                 to="/auth"
-//                 className="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-sky-600 hover:to-blue-700 transition-colors duration-300"
-//               >
-//                 Register
-//               </Link>
-//             </>
-//           )}
-//         </div>
-//       </div>
-//     </nav>
-//   );
-// };
-
-// export default Navbar;
-
 import { Link, NavLink } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-        {/* Logo */}
         <Link
           to="/"
           className="group flex items-center gap-3"
@@ -93,7 +26,6 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* Navigation */}
         <nav className="flex items-center gap-4">
           {user ? (
             <>
@@ -122,8 +54,7 @@ const Navbar = () => {
               >
                 + Create Post
               </NavLink>
-
-              {/* User Avatar */}
+              
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 text-sm font-bold text-white shadow-lg">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>

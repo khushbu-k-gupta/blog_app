@@ -56,7 +56,7 @@ const footer_data = [
 
 const Footer = () => {
 return (
-    <footer className="bg-gray-950 text-gray-300 relative z-10 font-sans">
+ <footer className="bg-gray-950 text-gray-300 relative z-10 font-sans">
       <div className="bg-gray-900/50 p-6 sm:p-10 md:px-20 lg:px-28 shadow-inner border-t-2 border-gray-800">
         <div className="flex flex-col lg:flex-row justify-between gap-12 pb-10">
           {/* Brand Section and Social Icons */}
@@ -64,7 +64,7 @@ return (
             <div className="flex items-center gap-3 mb-4">
               {blogIconSvg}
               <span className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-400">
-                BlogPulse
+                Blogging
               </span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-lg mb-6">

@@ -5,233 +5,420 @@ import axios from "../../api/axios";
 import { toast } from "react-toastify";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
+import Navbar from "../../components/layout/Navbar";
+import Footer from "../../components/layout/Footer";
 
 const CreatePost = () => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
+  const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
-  const [tags, setTags] = useState([]);
-  const [newTag, setNewTag] = useState("");
-  const [allTags, setAllTags] = useState([]);
-  const [status, setStatus] = useState("draft");
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  // Fetch existing tags for user
+  const [category, setCategory] = useState("");
+
+  const [categories, setCategories] = useState([]);
+
+  const [tags, setTags] = useState([]);
+  const [allTags, setAllTags] = useState([]);
+
+  const [status, setStatus] = useState("draft");
+
+  const [coverImage, setCoverImage] = useState(null);
+  const [preview, setPreview] = useState("");
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const res = await axios.get("/users/tags"); 
-        setAllTags(res.data.map((tag) => tag.name));
-        console.log(res.data)
-      } catch (error) {
-        console.error("Failed to fetch tags", error);
-      }
-    };
+    fetchCategories();
     fetchTags();
   }, []);
 
-  const handleAddTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag("");
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get("/categories");
+      setCategories(res.data);
+    } catch (err) {
+      toast.error("Failed to load categories", err.message);
     }
   };
 
-  const handleRemoveTag = (idx) => {
-    setTags(tags.filter((_, i) => i !== idx));
+  const fetchTags = async () => {
+    try {
+      const res = await axios.get("/users/tags");
+      setAllTags(res.data);
+    } catch (err) {
+      toast.error("Failed to load tags", err.message);
+    }
+  };
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only images are allowed");
+      return;
+    }
+
+    // if (file.size > 2 * 1024 * 1024) {
+    //   toast.error("Image size must be below 2MB");
+    //   return;
+    // }
+
+    setCoverImage(file);
+    setPreview(URL.createObjectURL(file));
   };
 
-  const toggleTag = (tag) => {
+  const toggleTag = (id) => {
     setTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+      prev.includes(id) ? prev.filter((tag) => tag !== id) : [...prev, id],
     );
   };
 
   const handleGenerate = async () => {
-    if (!title) return toast.error("Please enter a topic/title");
-    setLoading(true);
-    try {
-      const res = await axios.post("/ai/generate-post", { topic: title });
-      setContent(res.data.content || "");
-      toast.success("Post content generated successfully");
+    if (!title.trim()) {
+      return toast.error("Enter title first");
+    }
 
-      const tagsRes = await axios.post("/ai/suggest-tags", {
-        content: res.data.content,
+    setIsGenerating(true);
+
+    try {
+      const res = await axios.post("/ai/generate-post", {
+        topic: title,
       });
-      setTags(tagsRes.data.tags || []);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to generate post or tags");
+
+      setContent(res.data.content);
+
+      if (!excerpt) {
+        setExcerpt(res.data.content.slice(0, 200));
+      }
+
+      toast.success("Content generated");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "AI generation failed");
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
   };
 
   const handleSave = async () => {
-    if (!title || !content) return toast.error("Title and content required");
+    if (!title.trim()) return toast.error("Title required");
 
-    setLoading(true);
+    if (!category) return toast.error("Select category");
+
+    if (!excerpt.trim()) return toast.error("Excerpt required");
+
+    if (!content.trim()) return toast.error("Content required");
+
+    setIsSaving(true);
+
     try {
       const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
-      formData.append("status", "draft");
-      tags.forEach((tag) => formData.append("tags[]", tag));
-      if (image) formData.append("coverImage", image);
 
-      const res = await axios.post("/posts", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      formData.append("title", title);
+      formData.append("excerpt", excerpt);
+      formData.append("content", content);
+      formData.append("category", category);
+      formData.append("status", status);
+
+      tags.forEach((id) => {
+        formData.append("tags", id);
       });
 
-      toast.success("Post created successfully");
-
-      if (status !== "draft") {
-        await axios.put(`/posts/${res.data._id}/status`, { status });
-        toast.success("Post published successfully");
+      if (coverImage) {
+        formData.append("coverImage", coverImage);
       }
+      await axios.post("/posts", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      navigate("/");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to create post");
+      toast.success(status === "draft" ? "Draft saved" : "Post published");
+
+      navigate("/my-posts");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to create post");
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
-
   const modules = {
     toolbar: [
-      [{ header: [1, 2, false] }],
-      ["bold", "italic", "underline", "strike"],
+      [{ header: [1, 2, 3, false] }],
+
+      ["bold", "italic", "underline"],
+
       [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image"],
+
+      ["blockquote"],
+
+      ["code-block"],
+
+      ["link"],
+
+      ["image"],
+
       ["clean"],
     ],
   };
-
   return (
-    <div className="min-h-screen flex flex-col bg-gray-950 text-gray-300">
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
       <Navbar />
-      <div className="flex-grow flex items-center justify-center p-6">
-        <div className="bg-gray-900 p-10 rounded-xl shadow-2xl w-full max-w-4xl border border-gray-800">
-          <h1 className="text-3xl font-bold text-gray-100 mb-6 text-center">
-            Create a New Post
-          </h1>
 
-          <div className="flex flex-col gap-6">
-            {/* Title */}
+      <div className="flex-1 py-10 px-4">
+        <div className="max-w-5xl mx-auto bg-gray-900 border border-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold">Create New Blog</h1>
+
+            <p className="text-gray-400 mt-2">
+              Write, generate and publish your next article.
+            </p>
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-2 font-semibold">Blog Title *</label>
+
             <input
-              type="text"
-              placeholder="Enter post title/topic"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-3 border border-gray-700 bg-gray-800 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder-gray-500"
+              placeholder="Enter blog title..."
+              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-3 outline-none focus:border-sky-500"
             />
 
-            <button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="w-full py-3 text-lg font-bold rounded-lg transition-all duration-300 bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-600 hover:to-blue-700 transform hover:scale-105"
+            <div className="text-right text-gray-500 text-sm mt-1">
+              {title.length}/100
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-2 font-semibold">Category *</label>
+
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-3"
             >
-              {loading ? "Generating..." : "Generate with AI"}
+              <option value="">Select Category</option>
+
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-2 font-semibold">
+              Short Description *
+            </label>
+
+            <textarea
+              rows={4}
+              value={excerpt}
+              maxLength={250}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder="Write short summary..."
+              className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-3 resize-none"
+            />
+
+            <div className="text-right text-gray-500 text-sm mt-1">
+              {excerpt.length}/250
+            </div>
+          </div>
+
+          {/* <div className="mb-8">
+            <label className="block mb-3 font-semibold">Cover Image</label>
+
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+
+            {preview && (
+              <img
+                src={preview}
+                alt=""
+                className="mt-5 rounded-xl h-72 w-full object-cover border border-gray-700"
+              />
+            )}
+          </div> */}
+          <div className="mb-8">
+            <label className="block text-lg font-semibold text-white mb-3">
+              Cover Image
+            </label>
+
+            <label
+              htmlFor="coverImage"
+              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-600 rounded-2xl cursor-pointer bg-gray-900 hover:border-sky-500 hover:bg-gray-800 transition-all duration-300"
+            >
+              {preview ? (
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-2xl"
+                />
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-14 h-14 text-sky-400 mb-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16.5V18a3 3 0 003 3h12a3 3 0 003-3v-1.5M16.5 7.5L12 3m0 0L7.5 7.5M12 3v13.5"
+                    />
+                  </svg>
+
+                  <p className="text-lg font-medium text-gray-300">
+                    Click to upload cover image
+                  </p>
+
+                  <p className="text-sm text-gray-500 mt-2">
+                    PNG, JPG, JPEG (Max 5 MB)
+                  </p>
+                </>
+              )}
+            </label>
+
+            <input
+              id="coverImage"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+
+            {preview && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCoverImage(null);
+                  setPreview(null);
+                }}
+                className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white transition"
+              >
+                Remove Image
+              </button>
+            )} 
+          </div>
+
+          <div className="mb-8">
+            <button
+              disabled={isGenerating}
+              onClick={handleGenerate}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:opacity-90 font-semibold"
+            >
+              {isGenerating ? "Generating..." : "Generate Article with AI"}
             </button>
+          </div>
+
+          <div className="mb-8">
+            <label className="block mb-3 font-semibold">Content *</label>
 
             <ReactQuill
+              theme="snow"
               value={content}
               onChange={setContent}
               modules={modules}
-              className="bg-gray-800 rounded-lg text-gray-200 quill-dark"
-              theme="snow"
+              className="bg-white text-black rounded-lg"
             />
+          </div>
 
-            <div className="flex gap-2 items-center mt-2">
-              <input
-                type="text"
-                placeholder="Add a tag"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-                className="p-3 border border-gray-700 bg-gray-800 text-gray-200 rounded-lg flex-1 focus:outline-none focus:ring-2 focus:ring-sky-500 placeholder-gray-500"
-              />
+          <div className="mb-8">
+            <label className="block mb-3 font-semibold">Tags</label>
+          </div>
+
+          <div className="flex flex-wrap gap-3 mb-8">
+            {allTags.map((tag) => (
               <button
-                onClick={handleAddTag}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                key={tag._id}
+                onClick={() => toggleTag(tag._id)}
+                className={`px-4 py-2 rounded-full transition
+
+              ${
+                tags.includes(tag._id)
+                  ? "bg-sky-500 text-white"
+                  : "bg-gray-800 hover:bg-gray-700"
+              }`}
               >
-                Add
+                {tag.name}
               </button>
-            </div>
+            ))}
+          </div>
 
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="bg-sky-500/20 text-sky-300 px-3 py-1 rounded-full flex items-center gap-1 font-semibold"
-                >
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(idx)}
-                    className="text-red-500 hover:text-red-300 font-bold ml-1 transition-colors"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
+          {tags.length > 0 && (
+            <div className="mb-8">
+              <h3 className="mb-3 font-semibold">Selected Tags</h3>
 
-            <div className="flex flex-wrap gap-2">
-              {allTags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-colors ${
-                    tags.includes(tag) ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-400 hover:bg-gray-600"
-                  }`}
-                >
-                  {tag}
-                </span>
-              ))}
+              <div className="flex flex-wrap gap-3">
+                {allTags
+                  .filter((tag) => tags.includes(tag._id))
+                  .map((tag) => (
+                    <div
+                      key={tag._id}
+                      className="bg-sky-600 rounded-full px-4 py-2 flex items-center gap-2"
+                    >
+                      {tag.name}
+                    </div>
+                  ))}
+              </div>
             </div>
+          )}
 
-            <div className="flex items-center gap-6 mt-4">
-              <label className="flex items-center gap-2 text-gray-400">
+          <div className="mb-10">
+            <h3 className="font-semibold mb-3">Publishing</h3>
+
+            <div className="flex gap-8">
+              <label className="flex gap-2 items-center">
                 <input
                   type="radio"
-                  value="draft"
                   checked={status === "draft"}
                   onChange={() => setStatus("draft")}
-                  className="accent-sky-500 w-4 h-4"
                 />
-                Save as Draft
+                Draft
               </label>
-              <label className="flex items-center gap-2 text-gray-400">
+
+              <label className="flex gap-2 items-center">
                 <input
                   type="radio"
-                  value="published"
                   checked={status === "published"}
                   onChange={() => setStatus("published")}
-                  className="accent-sky-500 w-4 h-4"
                 />
-                Publish Post
+                Publish
               </label>
             </div>
-
-            <button
-              onClick={handleSave}
-              className="w-full py-3 mt-4 text-lg font-bold rounded-lg shadow-lg transition-all duration-300 bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-600 hover:to-blue-700 transform hover:scale-105"
-            >
-              {loading ? "Saving..." : "Save Post"}
-            </button>
           </div>
+
+          <button
+            disabled={isSaving}
+            onClick={handleSave}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-lg font-bold hover:opacity-90"
+          >
+            {isSaving
+              ? "Saving..."
+              : status === "draft"
+                ? "Save Draft"
+                : "Publish Post"}
+          </button>
         </div>
       </div>
+
       <Footer />
     </div>
   );
 };
-
 export default CreatePost;

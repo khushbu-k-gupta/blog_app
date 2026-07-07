@@ -13,6 +13,7 @@ const TagsAdmin = () => {
     setLoading(true);
     try {
       const res = await axios.get("/admin/tags");
+      console.log(res.data)
       setTags(res.data);
     } catch (error) {
       toast.error("Failed to fetch tags");

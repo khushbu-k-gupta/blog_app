@@ -1,4 +1,4 @@
-import Comment from "../components/Comment";
+import Comment from "./Comment";
 import { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { toast } from "react-toastify";

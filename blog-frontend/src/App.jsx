@@ -3,25 +3,25 @@ import { Suspense } from "react";
 import { useAuth } from "./context/AuthContext";
 
 // Pages
-import Home from "./pages/Home";
-import AuthPage from "./pages/AuthPage";
-import DashboardLayout from "./pages/Dashboard/DashboardLayout";
-import Users from "./pages/Dashboard/Users";
-import Posts from "./pages/Dashboard/Posts";
-import Analytics from "./pages/Dashboard/Analytics";
-import AiPostGenerator from "./pages/Dashboard/AiPostGenerator";
+import AuthPage from "./pages/auth/AuthPage";
+import DashboardLayout from "./pages/admin/DashboardLayout";
+import Users from "./pages/admin/Users";
+import Posts from "./pages/admin/Posts";
+import Analytics from "./pages/admin/Analytics";
+import AiPostGenerator from "./pages/admin/AiPostGenerator";
+import Home from "./pages/home/Home";
 
 // Protected routes
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import CreatePost from "./pages/Post/CreatePost";
-import MyPosts from "./pages/MyPosts";
 import PostDetail from "./pages/Post/PostDetail";
-import TagsAdmin from "./pages/Dashboard/TagsAdmin";
-import SavedPosts from "./pages/SavedPosts";
-import CommentsPage from "./pages/Dashboard/Comments";
+import TagsAdmin from "./pages/admin/TagsAdmin";
+import SavedPosts from "./pages/Post/SavedPosts";
+import CommentsPage from "./pages/admin/Comments";
 import EditPost from "./pages/Post/EditPost";
-import AdminDashboard from "./pages/Dashboard/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import MyPosts from "./pages/Post/MyPosts";
 
 function App() {
   const { loading } = useAuth();
@@ -38,29 +38,28 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<AuthPage />} />
-
+        <Route path="/post/:id" element={<PostDetail />} />
         <Route
           path="/create-post"
           element={
             <ProtectedRoute>
-              <CreatePost /> {/* Replace with CreatePost later */}
+              <CreatePost />
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/post/:id"
-          element={
-            <ProtectedRoute>
-              <PostDetail />
-            </ProtectedRoute>
-          }
-        />
-
         <Route
           path="/my-posts"
           element={
             <ProtectedRoute>
-              <MyPosts /> {/* Replace with CreatePost later */}
+              <MyPosts/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/saved-posts"
+          element={
+            <ProtectedRoute>
+              <SavedPosts />
             </ProtectedRoute>
           }
         />
@@ -68,11 +67,11 @@ function App() {
           path="/edit-post/:id"
           element={
             <ProtectedRoute>
-              <EditPost /> {/* Replace with CreatePost later */}
+              <EditPost />
             </ProtectedRoute>
           }
         />
-        {/* Admin dashboard */}
+
         <Route
           path="/dashboard/*"
           element={

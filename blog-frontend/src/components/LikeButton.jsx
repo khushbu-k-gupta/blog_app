@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import axiosInstance from "../api/axios";
 
 const LikeButton = ({ postId }) => {
   const { user } = useAuth();
@@ -12,7 +12,7 @@ const LikeButton = ({ postId }) => {
   useEffect(() => {
     const fetchLikes = async () => {
       try {
-        const res = await axios.get(`/posts/${postId}/like`);
+        const res = await axiosInstance.get(`/posts/${postId}/like`);
         setLikes(res.data?.count);
         setLiked(user ? res.data?.users.includes(user._id) : false);
       } catch (error) {
