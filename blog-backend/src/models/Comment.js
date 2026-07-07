@@ -9,14 +9,26 @@ const commentSchema = new mongoose.Schema(
       required: true,
     },
     post: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true },
-    reported: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    reported: {
+      type: Boolean,
+      default: false,
+    },
+    moderatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    moderationReason: {
+      type: String,
+      default: "",
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Comment", commentSchema);

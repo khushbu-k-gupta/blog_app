@@ -9,8 +9,14 @@ export const generatePost = async (req, res) => {
 
     const body = JSON.stringify({
       contents: [
-        { parts: [{ text: `Write a detailed blog post on "${topic}" in 100-250 words.` }] }
-      ]
+        {
+          parts: [
+            {
+              text: `Write a detailed blog post on "${topic}" in 100-250 words.`,
+            },
+          ],
+        },
+      ],
     });
 
     const response = await fetch(
@@ -19,21 +25,28 @@ export const generatePost = async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-goog-api-key": process.env.GOOGLE_API_KEY
+          "X-goog-api-key": process.env.GOOGLE_API_KEY,
         },
-        body
-      }
+        body,
+      },
     );
 
     const data = await response.json();
 
+    if (!response.ok) {
+      return res.status(response.status).json({
+        message: data.error?.message || "Gemini API failed",
+      });
+    }
+
     const content =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No content generated";
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No content generated";
 
     const post = await Post.create({
       title: topic,
       content,
-      author: req.user._id
+      author: req.user._id,
     });
 
     res.status(201).json(post);
@@ -47,12 +60,19 @@ export const suggestTags = async (req, res) => {
   try {
     const { content } = req.body;
 
-    if (!content) return res.status(400).json({ message: "Content is required" });
+    if (!content)
+      return res.status(400).json({ message: "Content is required" });
 
     const body = JSON.stringify({
       contents: [
-        { parts: [{ text: `Suggest 3-5 tags for this blog post content: "${content}"` }] }
-      ]
+        {
+          parts: [
+            {
+              text: `Suggest 3-5 tags for this blog post content: "${content}"`,
+            },
+          ],
+        },
+      ],
     });
 
     const response = await fetch(
@@ -61,16 +81,15 @@ export const suggestTags = async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-goog-api-key": process.env.GOOGLE_API_KEY
+          "X-goog-api-key": process.env.GOOGLE_API_KEY,
         },
-        body
-      }
+        body,
+      },
     );
 
     const data = await response.json();
-
     const tagsText = data?.candidates?.[0]?.content?.[0]?.text || "";
-    const tags = tagsText.split(",").map(tag => tag.trim());
+    const tags = tagsText.split(",").map((tag) => tag.trim());
 
     res.json({ tags });
   } catch (error) {
