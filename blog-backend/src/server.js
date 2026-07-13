@@ -2,16 +2,16 @@ import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import connectDB from "./src/config/db.js";
-import authRoutes from "./src/routes/authRoutes.js";
-import postRoutes from "./src/routes/postRoutes.js";
-import adminRoutes from "./src/routes/adminRoutes.js";
-import aiRoutes from "./src/routes/aiRoutes.js";
-import userRoutes from "./src/routes/userRoutes.js";
-import commentRoutes from "./src/routes/commentRoutes.js";
-import categoryRoutes from "./src/routes/categoryRoutes.js";
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 dotenv.config();
-await connectDB();
+connectDB();
 
 const app = express();
 
